@@ -15,6 +15,9 @@ RUN mkdir TTS/sounds
 #Create a temp folder to store the audio files
 RUN mkdir STT/sounds
 
+#create temp folder to store audio files
+RUN mkdir tmp
+
 #upgrade pip
 RUN pip install --upgrade pip
 

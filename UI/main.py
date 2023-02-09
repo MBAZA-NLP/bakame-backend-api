@@ -1,7 +1,7 @@
 import streamlit as st 
 from audio_recorder_streamlit import audio_recorder
 import requests
-import os
+import json
 
 #Set app configuration
 st.set_page_config(page_title="RW Deep Speech UI",  initial_sidebar_state="expanded")
@@ -79,9 +79,10 @@ class stt:
 
 
     def stt_api(self, audio: bytes):
-        files = {'audio': audio}
-        response = requests.post(f"http://127.0.0.1:8000/tts", data=files)
-        return response.json()
+        form_data = {"audio": audio}
+        response = requests.post(f"http://127.0.0.1:8000/stt", data=form_data)
+        print(response.text)
+        return response.text
 
     def feedback(self, max_wer: int):
         
