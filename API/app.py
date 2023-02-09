@@ -1,10 +1,13 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, File
 from fastapi.responses import FileResponse
 import os  # For system commands
 from pydantic import BaseModel
 
 class Text(BaseModel):
     text: str
+
+class AudioBytes(BaseModel):
+    audio: bytes
 
 app = FastAPI()
 
@@ -15,8 +18,12 @@ async def index():
 
 #Text to speech path
 @app.post("/stt")
-async def stt(request: Request):
-    return {"message": "This is the stt page"}
+async def stt(request: Request, audio: bytes = File()):
+    file_id : int = len(os.listdir("STT/sounds")) + 1
+    with open(f"STT/sounds/sound-{file_id}.wav", "wb") as f:
+        f.write(audio)
+    
+    return "Success"
 
 #Text to speech path
 @app.post("/tts")
