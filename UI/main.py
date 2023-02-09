@@ -50,25 +50,26 @@ class stt:
                 st.success("File uploaded successfully")
 
         try :
-            st.header("Preview your audio file")
-            if st.session_state['audio_bytes']:
-                st.audio(st.session_state['audio_bytes'], format="audio/wav")
-                if st.button("Transcribe"):
-                    st.session_state['stt_text_output'] = self.stt_api(st.session_state['audio_bytes'])
+            if st.session_state['stt_audio_bytes_input']:
+                st.header("Preview your audio file")
+                st.audio(st.session_state['stt_audio_bytes_input'], format="audio/wav")
+                transcribe =  st.button("Transcribe")
+                if transcribe:
+                    st.session_state['stt_text_output'] = self.stt_api(audio=st.session_state['stt_audio_bytes_input'])
                 if st.session_state['stt_text_output']:
                     st.success("Speech to text completed")
                     st.write(st.session_state['stt_text_output'])
         except KeyError:
-            pass
+            print("KeyError")
 
 
     def stt_api(self, audio: bytes):
-        url = "http://127.0.0.1:8000/stt"
-        files = {'audio': audio, 'type': 'audio/wav'}
-        response = requests.post(url, files=files)
+        files = {'audio': audio}
+        response = requests.post(f"http://127.0.0.1:8000/tts", data=files)
         return response.json()
 
     def feedback(self, max_wer: int):
+        
         st.title("Feedback Section")
         st.write("Please provide feedback on the model's performance")
         st.slider("Word Error Rate i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
@@ -102,22 +103,21 @@ class tts:
 
 
     def tts_api(self, text: str):
-        host = "http://127.0.0.1" #os.environ.get("API_HOST")
-        port = 8000 #os.environ.get("API_PORT")
         response = requests.post(f"http://127.0.0.1:8000/tts", json={"text": text})
         with open("sound.wav", "wb") as f:
             f.write(response.content)
         return response.content
 
-    def feedback(self, max_wer: int):
-        st.title("Feedback Section")
-        st.write("Please provide feedback on the model's performance")
-        st.slider("Word Error Rate i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
-        st.slider("Overall Score including accent", 0, 5, 3, key="tts_feedback_score", help="The score is a combination of the word error rate and the accent score" )
-        st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
-        if st.button("Submit"):
-            st.success("Thank you for your feedback")
-            return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_score"], st.session_state["tts_feedback_comment"]
+    def feedback(self, max_wer: int, feedback_token: str = None):
+        with st.form("Feedback Form"):
+            st.title("Feedback Section")
+            st.write("Please provide feedback on the model's performance")
+            st.slider("Word Error Rate i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
+            st.slider("Overall Score including accent", 0, 5, 3, key="tts_feedback_score", help="The score is a combination of the word error rate and the accent score" )
+            st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
+            if st.form_submit_button("Submit Feedback"):
+                st.success("Thank you for your feedback")
+                return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_score"], st.session_state["tts_feedback_comment"]
 
 
 def main():

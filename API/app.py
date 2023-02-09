@@ -3,6 +3,8 @@ from fastapi.responses import FileResponse
 import os  # For system commands
 from pydantic import BaseModel
 
+from STT import engine
+
 class Text(BaseModel):
     text: str
 
@@ -22,8 +24,11 @@ async def stt(request: Request, audio: bytes = File()):
     file_id : int = len(os.listdir("STT/sounds")) + 1
     with open(f"STT/sounds/sound-{file_id}.wav", "wb") as f:
         f.write(audio)
+
+    engine.convert(file_id)
+    text = engine.transcribe(file_id)
     
-    return "Success"
+    return text
 
 #Text to speech path
 @app.post("/tts")
