@@ -1,0 +1,2 @@
+streamlit==1.17.0
+audio_recorder_streamlit==0.0.8
