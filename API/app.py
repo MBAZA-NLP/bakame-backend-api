@@ -8,15 +8,8 @@ from STT import engine
 class Text(BaseModel):
     text: str
 
-class AudioBytes(BaseModel):
-    audio: bytes
-
 app = FastAPI()
 
-#Index path
-@app.post("/")
-async def index():
-    return {"message": "This is the index page"}
 
 #Text to speech path
 @app.post("/stt")

@@ -4,29 +4,44 @@ import requests
 import os
 
 #Set app configuration
-st.set_page_config(page_title="RW Deep Speech UI", page_icon="🗣️",  initial_sidebar_state="expanded")
+st.set_page_config(page_title="RW Deep Speech UI",  initial_sidebar_state="expanded")
 
-def project_info():
-    st.sidebar.success("If you would like to contribute to the development of the models, please visit the [Github repository](github.com/agent87)")
 
 def sidebar():
-    options = st.sidebar.selectbox("Select a model", ["Home", "Speech to Text", "Text to Speech"])
-    project_info()
+    options = st.sidebar.selectbox("Select a model", ["Documentation", "Speech to Text", "Text to Speech"])
+    st.sidebar.success("If you would like to contribute to the development of the models, please visit the [Github repository](github.com/agent87)")
     return options
 
-def index():
-    st.title("Kinyarwanda Deep Speech UI")
-    st.write("This is a user interface for the Kinyarwanda speech to text and text to speech models. The aim of this setup is to collect feedback from the general non-technical public on the performance of the models.")
+class index:
+    host = "http://127.0.0.1"
+    port = 8000
+    domain = host + ':' + str(port)
+    def __init__(self):
+        st.title("Kinyarwanda Deep Speech UI")
+        st.write("This is a user interface for the Kinyarwanda speech to text and text to speech models. The aim of this setup is to collect feedback from the general non-technical public on the performance of the models.")
+        ### STT DOCUMENTATION ###
+        self.stt_docs()
 
-#Set of Global variables to be used in the stt
-input_audio_bytes = None
-output_audio_bytes = None
+        ### TTS DOCUMENTATION ###
+        self.tts_docs()
+    
+    def stt_docs(self):
+        st.header("Speech to text documentation")
+        st.write(f"To transcribe using this endpoint use the following commands")
+        python, curl , javascript , Go= st.tabs(["Python", "Curl", "Javascript", "Go"])
 
+        with python:
+            st.code("import requests \n ")
 
-#Set of Global variables to be used in the tts
-input_text : str = None
-output_audio_bytes : bytes = None
+    def tts_docs(self):
+        st.header("Text to speech endpoint documentation")
+        st.write(f"To generate a voice audio using this endpoint use the following commands")
+        python, curl , javascript , Go= st.tabs(["Python", "Curl", "Javascript", "Go"])
 
+        with python:
+            with open("examples/tts/python.py", 'r') as f:
+                py_code = f.read()
+            st.code(py_code)
 
 class stt:
     def __init__(self)-> None:
@@ -60,7 +75,7 @@ class stt:
                     st.success("Speech to text completed")
                     st.write(st.session_state['stt_text_output'])
         except KeyError:
-            print("KeyError")
+            pass
 
 
     def stt_api(self, audio: bytes):
@@ -124,7 +139,7 @@ def main():
 
     mode = sidebar()
 
-    if mode == "Home":
+    if mode == "Documentation":
         index()
     elif mode == "Speech to Text":
         stt()

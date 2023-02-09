@@ -1,19 +1,38 @@
 FROM python:3.10.9
 
+#Create and make the API folder the working directory
 WORKDIR /API
 
 #Copy all the files
 COPY . . 
 
+#clone the kinyarwanda tts repo into the tts folder
+RUN git clone https://huggingface.co/DigitalUmuganda/Kinyarwanda_YourTTS TTS
+
+#create a temp folder to store the audio files
+RUN mkdir TTS/sounds
+
+#Create a temp folder to store the audio files
+RUN mkdir STT/sounds
+
+#upgrade pip
+RUN pip install --upgrade pip
+
+#Install the cython package
+RUN pip install --no-cache-dir cython
+
 #Install all the dependencies
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+#Install python-multipart
+RUN pip install python-multipart
 
 #install the package using apt with packages.txt file
 RUN apt-get update && cat packages.txt | xargs apt-get install -y
 
 #Expose the port
-EXPOSE 5000
+EXPOSE 8000
 
 #Run the app
-CMD ["uvicorn", "app:app", "--port", "5000"]
+CMD ["uvicorn", "app:app", "--host=0.0.0.0", "--port=8000"]
 
