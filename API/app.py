@@ -15,7 +15,6 @@ app = FastAPI()
 @app.post("/stt")
 async def stt(request: Request, audio_bytes: bytes = File()):
     transcription = engine.transcriber(audio_bytes)
-    
     return "hello"
 
 #Text to speech path
