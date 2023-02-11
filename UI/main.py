@@ -42,6 +42,19 @@ class index:
             with open("examples/tts/python.py", 'r') as f:
                 py_code = f.read()
             st.code(py_code)
+        
+        with curl:
+            st.code("""curl -X POST -H "Content-Type: application/json" -d '{"text":"Mukomeze mugire ibihe byiza!"}' "https://domain.com:8000/tts" -o audio.wav""")
+        
+        with javascript:
+            with open("examples/tts/javascript.js", 'r') as f:
+                js_code = f.read()
+            st.code(js_code)
+
+        with Go:
+            with open("examples/tts/golang.go", 'r') as f:
+                go_code = f.read()
+            st.code(go_code)
 
 class stt:
     def __init__(self)-> None:
@@ -53,10 +66,11 @@ class stt:
         record, upload= st.tabs(tabs)
 
         with record:
-            audio_record = audio_recorder()
-            if audio_record:
-                st.session_state['stt_audio_bytes_input'] = audio_record
-                st.success("Recording completed")
+            with st.form("Record Voice"):
+                audio_record = audio_recorder()
+                if st.form_submit_button("Listen to recording.") and audio_record:
+                    st.session_state['stt_audio_bytes_input'] = audio_record
+                    st.success("Recording completed")
 
         with upload:  
             audio_file = st.file_uploader("Upload a file", type=["wav", "mp3"])
@@ -79,9 +93,8 @@ class stt:
 
 
     def stt_api(self, audio: bytes):
-        form_data = {"audio": audio}
+        form_data = {"audio_bytes": audio }
         response = requests.post(f"http://127.0.0.1:8000/stt", data=form_data)
-        print(response.text)
         return response.text
 
     def feedback(self, max_wer: int):
@@ -120,8 +133,6 @@ class tts:
 
     def tts_api(self, text: str):
         response = requests.post(f"http://127.0.0.1:8000/tts", json={"text": text})
-        with open("sound.wav", "wb") as f:
-            f.write(response.content)
         return response.content
 
     def feedback(self, max_wer: int, feedback_token: str = None):
@@ -147,7 +158,7 @@ def main():
     elif mode == "Text to Speech":
         tts()
     
-
+#
 
 if __name__ == "__main__":
     main()

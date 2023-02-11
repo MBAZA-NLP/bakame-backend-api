@@ -20,21 +20,43 @@ def convert(file_id: int):
     #     return False  
     # pac.convert_wav_to_16bit_mono(audio.name,audio.name)
     # return True
+    pass
 
-    #get the absolute file path of the audio
-    file_path = os.path.abspath(f"STT/sounds/sound-{file_id}.wav")[0]
+class transcriber:
+    workdir = f"STT/sounds/"
+    def __init__(self, audio_bytes : bytes) -> None:
+        #Save the audio bytes file
+        self.file_id : int = len(os.listdir("STT/sounds")) + 1
+        with open(f"STT/sounds/sound-{self.file_id}.wav", "wb") as audio_file:
+            audio_file.write(audio_bytes)
 
-    #convert the audio file
-    pac.convert_wav_to_16bit_mono(file_path,file_path)
+        #convert the audio file
+        if self.convert_wav_to_16bit_mono():
+            print("Done!")
+        else:
+            print('unnable to')
 
 
-def transcribe(file_id: str):#):
-    # audio = audio_microphone if audio_microphone else audio
-    #if convert(audio) == False:
-    #    return "The format must be mp3,wav and ogg"
-    file_path = os.path.abspath(f"STT/sounds/sound-{file_id}.wav")[0]
+        #transcribe and store to text var in class
+        #self.text = self.transcribe()
 
-    #transcribe
-    result= hf_model.transcribe([file_path])
-    return result
+
+    def convert_wav_to_16bit_mono(self):
+        try:
+            file_path = self.workdir + f"sound-{self.file_id}.wav"
+            pac.convert_wav_to_16bit_mono(file_path,file_path)
+            return True
+        except FileNotFoundError:
+            return False
+        
+    def transcribe(self):
+        try:
+            file_path = self.workdir + f"sound-{self.file_id}.wav"
+            result= hf_model.transcribe([file_path])
+            return result[0]
+        except FileNotFoundError:
+            return "Unable to transcribe audio!"
+
+
+        
 

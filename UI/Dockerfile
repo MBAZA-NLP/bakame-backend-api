@@ -7,7 +7,10 @@ WORKDIR /UI
 COPY . .
 
 #install streamlit and dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install  -r requirements.txt
+
+#Expose port 8501
+EXPOSE 8501
 
 #run the streamlit app
-CMD [ "streamlit", "run", "main.py", "--server.port", "8501"]
+CMD streamlit run main.py --server.port 8501

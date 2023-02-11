@@ -22,10 +22,10 @@ RUN mkdir tmp
 RUN pip install --upgrade pip
 
 #Install the cython package
-RUN pip install --no-cache-dir cython
+RUN pip install cython
 
 #Install all the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 #Install python-multipart
 RUN pip install python-multipart
