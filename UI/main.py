@@ -9,7 +9,6 @@ st.set_page_config(page_title="RW Deep Speech UI",  initial_sidebar_state="expan
 
 def sidebar():
     options = st.sidebar.selectbox("Select a model", ["Translation", "Speech to Text", "Text to Speech"])
-    st.sidebar.success("If you would like to contribute to the development of the models, please visit the [Github repository](github.com/agent87)")
     return options
 
 # class index:
@@ -76,7 +75,7 @@ class translation:
             if st.session_state["tts_audio_bytes_ouput"]:
                 st.header("Listen bellow to the generated audio file. :)")
                 st.audio(st.session_state["tts_audio_bytes_ouput"], format="audio/wav")
-                self.feedback(len(st.session_state['tts_typed_text'] .split(" ")))
+                #self.feedback(len(st.session_state['tts_typed_text'] .split(" ")))
         except KeyError:
             pass
 
@@ -85,16 +84,16 @@ class translation:
         response = requests.post(f"http://127.0.0.1:8000/tts", json={"text": text})
         return response.content
 
-    def feedback(self, max_wer: int, feedback_token: str = None):
-        with st.form("Feedback Form"):
-            st.title("Feedback Section")
-            st.write("Please provide feedback on the model's performance")
-            st.slider("Overall Score including accent", 0, 5, 3, key="tts_feedback_score", help="The score is a combination of the word error rate and the accent score" )
-            st.slider("Word Pronounced in the wrong way i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
-            st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
-            if st.form_submit_button("Submit Feedback"):
-                st.success("Thank you for your feedback")
-                return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_score"], st.session_state["tts_feedback_comment"]
+    # def feedback(self, max_wer: int, feedback_token: str = None):
+    #     with st.form("Feedback Form"):
+    #         st.title("Feedback Section")
+    #         st.write("Please provide feedback on the model's performance")
+    #         st.slider("Overall Score including accent", 0, 5, 3, key="tts_feedback_score", help="The score is a combination of the word error rate and the accent score" )
+    #         st.slider("Word Pronounced in the wrong way i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
+    #         st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
+    #         if st.form_submit_button("Submit Feedback"):
+    #             st.success("Thank you for your feedback")
+    #             return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_score"], st.session_state["tts_feedback_comment"]
 
 
 
@@ -135,19 +134,19 @@ class stt:
 
 
     def stt_api(self, audio: bytes):
-        form_data = {"audio_bytes": audio }
+        form_data = {"file": audio }
         response = requests.post(f"http://34.69.164.74:15672/transcribe/", data=form_data)
         return response.text
 
-    def feedback(self, max_wer: int):
+    # def feedback(self, max_wer: int):
         
-        st.title("Feedback Section")
-        st.write("Please provide feedback on the model's performance")
-        st.slider("Word Error Rate i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
-        st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
-        if st.button("Submit"):
-            st.success("Thank you for your feedback")
-            return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_comment"]
+    #     st.title("Feedback Section")
+    #     st.write("Please provide feedback on the model's performance")
+    #     st.slider("Word Error Rate i.e the number of word spelled incorrectly", 0, max_wer, 0,  key="tts_feedback_wer")
+    #     st.text_area("Enter your comment", key="tts_feedback_comment",  help="Please provide feedback on the model's performance")
+    #     if st.button("Submit"):
+    #         st.success("Thank you for your feedback")
+    #         return st.session_state["tts_feedback_wer"], st.session_state["tts_feedback_comment"]
 
 
 class tts:
