@@ -14,8 +14,8 @@ app = FastAPI()
 #Text to speech path
 @app.post("/stt")
 async def stt(request: Request, audio_bytes: bytes = File()):
-    transcription = engine.transcriber(audio_bytes)
-    return "hello"
+    #transcription = engine.transcriber(audio_bytes)
+    return "Under construction. Checkout it soon!"
 
 #Text to speech path
 @app.post("/tts")
