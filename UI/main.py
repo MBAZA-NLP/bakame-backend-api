@@ -2,12 +2,46 @@ import streamlit as st
 from audio_recorder_streamlit import audio_recorder
 import requests
 import json
+import base64
+
 
 #Set app configuration
-st.set_page_config(page_title="RW Deep Speech UI",  initial_sidebar_state="expanded")
+st.set_page_config(page_title="Digital Umuganda",  initial_sidebar_state="expanded", page_icon="🖖")
+
+
+def get_base64(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+
+def set_background(png_file):
+    bin_str = get_base64(png_file)
+    page_bg_img = '''
+    <style>
+    .stApp {
+    background-image: url("data:image/png;base64,%s");
+    background-size: cover;
+    }
+    </style>
+    ''' % bin_str
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+set_background('assets/images/background.png')
 
 
 def sidebar():
+    st.markdown(
+                    """
+                <style>
+                .sidebar .sidebar-content {
+                    background-image: linear-gradient(#2e7bcf,#2e7bcf);
+                    color: white;
+                }
+                </style>
+                """,
+    unsafe_allow_html=True,)
+    st.sidebar.image('assets/images/du.png')
     options = st.sidebar.selectbox("Select a model", ["Translation", "Speech to Text", "Text to Speech"])
     return options
 
