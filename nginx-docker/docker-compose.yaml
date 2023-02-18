@@ -1,0 +1,34 @@
+---
+version: "3"
+services:
+  web-server:
+    image: lscr.io/linuxserver/swag
+    container_name: webserver
+    cap_add:
+      - NET_ADMIN
+    env_file: ".env"
+    environment:
+      - PUID=${USER_UID} # User id obtained by runnind id -u $USER
+      - PGID=${USER_GID} # Group id obtained by runnind id -g $USER
+      - TZ=${TZ}
+      - URL=${URL}
+      - SUBDOMAINS=${SUBDOMAINS}
+      - VALIDATION=${VALIDATION}
+      - EMAIL=${EMAIL}
+      - ONLY_SUBDOMAINS=${ONLY_SUBDOMAINS}
+      - STAGING=${STAGING}
+    volumes:
+      - ./config:/config
+      - ./swag/www:/config/www
+      - ./swag/proxy-confs:/config/nginx/proxy-confs/
+      - ./swag/conf/error-pages.conf:/config/nginx/error-pages.conf
+    ports:
+      - 443:443
+      - 80:80 #optional
+    restart: unless-stopped
+    networks:
+      - infrastructure_default
+
+networks:
+  infrastructure_default: 
+    external: true
