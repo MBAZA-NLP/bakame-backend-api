@@ -4,9 +4,9 @@ from pydub import AudioSegment
 import pyaudioconvert as pac
 
 #import the model using hugging face 
-hf_model = nemo_asr.models.EncDecRNNTBPEModel.from_pretrained(model_name="mbazaNLP/Kinyarwanda_nemo_stt_conformer_model")
+#hf_model = nemo_asr.models.EncDecRNNTBPEModel.from_pretrained(model_name="mbazaNLP/Kinyarwanda_nemo_stt_conformer_model")
 
-
+hf_model = nemo_asr.models.EncDecCTCModelBPE.from_pretrained(model_name="stt_rw_conformer_ctc_large")
 
 class transcriber:
     def __init__(self, audio_bytes : bytes) -> None:
