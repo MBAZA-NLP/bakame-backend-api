@@ -27,8 +27,8 @@ services:
       - 80:80 #optional
     restart: unless-stopped
     networks:
-      - infrastructure_default
+      - reverse-proxy
 
 networks:
-  infrastructure_default: 
+  reverse-proxy: 
     external: true
