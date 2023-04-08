@@ -1,95 +1,72 @@
-from fastapi import FastAPI, Request, UploadFile, File
+from fastapi import FastAPI, Form, Request, UploadFile, File
+from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
-import os
-from datetime import datetime
-from time import time
-from pymongo import MongoClient
-#Import packages
-from stt.transcribe import transcriber
-#from tts.generator import generator
-
-import uuid
+from utils import stt_sdk, tts_sdk, chatbot_sdk
+import io
 
 
 
 api = FastAPI()  #instance
 
-##Mongo DB
-class db_credentials(BaseModel):
-    username : str = "myuser" #os.getenv('MONGO_USERNAME')
-    password : str = "mypassword" #os.getenv('MONGO_PASSWORD')
-    host : str = "locahost"#os.getenv('MONGO_HOST')
-    port : str = "27017" #os.getenv('MONGO_PORT')
-    database : str = "feedback" #os.getenv('MONGO_DATABASE')
-    collection : str = "logs" #os.getenv("MONGO_COLLECTION")
 
-db = db_credentials()
-
-client = MongoClient(f'mongodb://{db.username}:{db.password}@{db.host}:{db.port}/')
+#text path
+@api.post('/type')
+async def text_interaction():
+    pass
 
 
+#voice path
+@api.post("/speak")
+async def voice_interaction(request : Request, audio_file: bytes = File(...), user_id : str = Form(...)):
 
-class Text(BaseModel):
-    text : str
+    #process the voice
+    text = stt_sdk.stt_api(audio_bytes=audio_file)
+    
+    #get response from chabot
+    chat_response = chatbot_sdk.chatbot_api(chat=text['message'], user_id=user_id)
+    tts_chat = chatbot_sdk.process_tts_response(chat_response)
+    print(tts_chat)
 
-
-class logger:
-    log = {}
-    def __init__(self, mode: str, ) -> None:
-        self.log['mode'] = mode
-        self.log['time'] = datetime.now()
-        self.log['feedback_token'] = str(uuid.uuid4()) #client[db.database].list_collection_names(filter={'name': 'logs'})
-        self.log['duration'] = time()
-
-
-    def update(self, total_words:str = None, audio_size:int = None, file_name:str = None, text:str = None):
-        self.log['duration'] = time() - self.log['duration']
-        if total_words:
-            self.log['total_words'] = total_words
-        if audio_size:
-            self.log['audio_size'] = audio_size
-        if file_name:
-            self.log['file_name'] = file_name
-        if text:
-            self.log['text'] = file_name
-
-    def commit_to_db(self):
-        client[db.database][db.collection].insert_one(self.log)
+    #tts response
+    voice_response = tts_sdk.tts_api(text=tts_chat)
+    voice_response_bytes = io.BytesIO()
+    voice_response_bytes.write(voice_response.content)
+    voice_response_bytes.seek(0)
 
 
-
-@api.post('/register') #route
-def register(request: Request): #serving function
-    return "User Registration Endpoint"
-
-
-@api.post('/token') 
-def get_token(request: Request):
-    return "Here is your token"
+    # return chat response and voice response as JSON
+    headers = {
+        "Content-Disposition": f"attachment; filename=audio.wav",
+        "text" : f'{chatbot_sdk.process_chat_response(chat_response)}'
+    }
 
 
-@api.post("/transcribe")
-async def transcribe_speech(audio_bytes: bytes = File()):
-    #log the request
-    #log =  logger("transcription")
-    #initiate the transcription
-    speech  = transcriber(audio_bytes)
-    #update the log
-    #log.update(total_words=len(speech.transcription), text=speech.transcription)
-    #commit the log
-    #log.commit_to_db()
+    return StreamingResponse(voice_response_bytes, headers=headers, media_type="audio/mpeg")
 
-    return {"sentences": speech.transcription}
 
-#Text to speech path
-@api.post("/generate_audio")
-async def tts(request: Request, text : Text) -> str:
-    text = text.dict()['text']
-    file_id : int = len(os.listdir("tts/sounds")) + 1
-    #Infer the text
-    os.system(f'tts --text "{text}" --model_path tts/model.pth --encoder_path tts/SE_checkpoint.pth.tar --encoder_config_path tts/config_se.json --config_path tts/config.json --speakers_file_path tts/speakers.pth --speaker_wav tts/conditioning_audio.wav --out_path tts/sounds/sound-{file_id}.wav')
-    return FileResponse(f"tts/sounds/sound-{file_id}.wav", media_type="audio/wav")
+@api.post("/audio")
+async def process_audio(audio: UploadFile = File(...), text: str = Form(...)):
+    """
+    Process audio file and text string
+    """
+    # Do some processing with the audio and text here
+    # ...
+
+    # Create a BytesIO object to store the response content
+    output = io.BytesIO()
+    
+    # Write the audio file contents to the BytesIO object
+    output.write(audio.file.read())
+    output.seek(0)
+
+    # Set the response headers
+    headers = {
+        "Content-Disposition": f"attachment; filename={audio.filename}",
+        "text" :  text
+    }
+
+    # Return a StreamingResponse object with the audio file and text as the response content and JSON payload respectively
+    return StreamingResponse(output, headers=headers, media_type="audio/mpeg")
 
 
 
