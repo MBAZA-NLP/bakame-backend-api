@@ -49,7 +49,7 @@ def tts_api(text : str):
     response = requests.post(url=os.getenv('TTS_HOST'), headers=headers,data=payload)
 
     if response.status_code == 200:
-        tts_save_sdk(text, response)
+        tts_save_sdk(text, response.content)
     
 
     return response
