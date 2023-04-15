@@ -1,12 +1,20 @@
 from fastapi import FastAPI, Form, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from utils import stt_sdk, tts_sdk, chatbot_sdk
 import io
 
 
 
 api = FastAPI()  #instance
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 #text path
@@ -21,6 +29,7 @@ async def voice_interaction(request : Request, audio_file: bytes = File(...), us
 
     #process the voice
     text = stt_sdk.stt_api(audio_bytes=audio_file)
+    print(text)
     
     #get response from chabot
     chat_response = chatbot_sdk.chatbot_api(chat=text['message'], user_id=user_id)
