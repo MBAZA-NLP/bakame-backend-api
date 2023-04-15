@@ -3,6 +3,9 @@ FROM python:3.10.9
 #Create and make the API folder the working directory
 WORKDIR /usr/src/app
 
+#Create tts cache
+RUN mkdir cache/tts/
+
 #Copy all the files
 COPY . . 
 
