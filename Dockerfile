@@ -5,16 +5,19 @@ WORKDIR /usr/src/app
 
 #Create tts cache
 RUN mkdir cache
-RUN mkdir cache/tts
+RUN mkdir cache/tts 
 
-#Copy all the files
-COPY . . 
+#copy the requirments
+COPY requirements.txt .
 
 #upgrade pip
 RUN pip install --no-cache-dir --upgrade pip
 
 #Install all the dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+#Copy all the files
+COPY . . 
 
 #Expose the port
 EXPOSE 8000
