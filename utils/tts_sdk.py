@@ -52,7 +52,7 @@ def tts_api(text : str):
         tts_save_sdk(text, response.content)
     
 
-    return response
+    return response.content
 
 
 
