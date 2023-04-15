@@ -39,7 +39,7 @@ async def voice_interaction(request : Request, audio_file: bytes = File(...), us
     #tts response
     voice_response = tts_sdk.tts_api(text=tts_chat)
     voice_response_bytes = io.BytesIO()
-    voice_response_bytes.write(voice_response.content)
+    voice_response_bytes.write(voice_response)
     voice_response_bytes.seek(0)
 
 
