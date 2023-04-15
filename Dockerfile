@@ -4,7 +4,8 @@ FROM python:3.10.9
 WORKDIR /usr/src/app
 
 #Create tts cache
-RUN mkdir cache/tts/
+RUN mkdir cache
+RUN mkdir cache/tts
 
 #Copy all the files
 COPY . . 
