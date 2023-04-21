@@ -2,7 +2,7 @@ from fastapi import FastAPI, Form, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from utils import stt_sdk, tts_sdk, chatbot_sdk
+from utils import stt_sdk, tts_sdk, chatbot_sdk, va_sdk
 import io
 
 
@@ -17,15 +17,51 @@ api.add_middleware(
 )
 
 
+
+#text path
+@api.post('/')
+async def index():
+    return "Welcome to the Health Assistant API"
+
 #text path
 @api.post('/type')
-async def text_interaction():
-    pass
+async def text_interaction(request : Request, text : str):
+    
+    #get response from chabot
+    chat_response = chatbot_sdk.chatbot_api(chat=text['message'])
+    tts_chat = chatbot_sdk.process_tts_response(chat_response)
+    
+
+    # return chat response and voice response as JSON
+    headers = {
+        "Content-Disposition": f"attachment; filename=audio.wav",
+        "text" : f'{chatbot_sdk.process_chat_response(chat_response)}'
+    }
+
+
+    return chat_response
+
+#text path
+@api.post('/va_cmu/type')
+async def text_interaction_va(request : Request, text : str):
+    
+    #get response from chabot
+    chat_response = va_sdk.chatbot_api(question=text['message'])
+    
+
+    # return chat response and voice response as JSON
+    headers = {
+        "Content-Disposition": f"attachment; filename=audio.wav",
+        "text" : f'{chat_response}'
+    }
+
+
+    return chat_response
 
 
 #voice path
 @api.post("/speak")
-async def voice_interaction(request : Request, audio_file: bytes = File(...), user_id : str = Form(...)):
+async def voice_interaction_bakame(request : Request, audio_file: bytes = File(...), user_id : str = Form(...)):
 
     #process the voice
     text = stt_sdk.stt_api(audio_bytes=audio_file)
@@ -53,29 +89,33 @@ async def voice_interaction(request : Request, audio_file: bytes = File(...), us
     return StreamingResponse(voice_response_bytes, headers=headers, media_type="audio/mpeg")
 
 
-@api.post("/audio")
-async def process_audio(audio: UploadFile = File(...), text: str = Form(...)):
-    """
-    Process audio file and text string
-    """
-    # Do some processing with the audio and text here
-    # ...
 
-    # Create a BytesIO object to store the response content
-    output = io.BytesIO()
+#voice path
+@api.post("/va_cmu/speak")
+async def voice_assistant(request : Request, audio_file: bytes = File(...), user_id : str = Form(...)):
+
+    #process the voice
+    text = stt_sdk.stt_api(audio_bytes=audio_file)
     
-    # Write the audio file contents to the BytesIO object
-    output.write(audio.file.read())
-    output.seek(0)
+    #get response from chabot
+    chat_response = va_sdk.chatbot_api(question=text['message'])
 
-    # Set the response headers
+
+    #tts response
+    voice_response = tts_sdk.tts_api(text=chat_response)
+    voice_response_bytes = io.BytesIO()
+    voice_response_bytes.write(voice_response)
+    voice_response_bytes.seek(0)
+
+
+    # return chat response and voice response as JSON
     headers = {
-        "Content-Disposition": f"attachment; filename={audio.filename}",
-        "text" :  text
+        "Content-Disposition": f"attachment; filename=audio.wav",
+        "text" : f'{chat_response}'
     }
 
-    # Return a StreamingResponse object with the audio file and text as the response content and JSON payload respectively
-    return StreamingResponse(output, headers=headers, media_type="audio/mpeg")
+
+    return StreamingResponse(voice_response_bytes, headers=headers, media_type="audio/mpeg")
 
 
 
